@@ -91,21 +91,21 @@ class _AuthScreenState extends State<AuthScreen> {
         ),
         const SizedBox(height: 20),
         ElevatedButton(
-          onPressed: () {},
-          style: ElevatedButton.styleFrom(
-            minimumSize: const Size(double.infinity, 50),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
+            onPressed: () {},
+            style: ElevatedButton.styleFrom(
+              minimumSize: const Size(double.infinity, 50),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+              backgroundColor: const Color(0xFF116E5C),
             ),
-            backgroundColor: const Color(0xFF116E5C),
-          ),
-          child: const Text(
+            child: const Text(
               "Sign In",
               style: TextStyle(
-              fontSize: 18,
-              color: Colors.white,
-              fontWeight: FontWeight.bold),
-          )
+                  fontSize: 18,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold),
+            )
         ),
         const SizedBox(height: 20),
         Row(
@@ -141,8 +141,8 @@ class _AuthScreenState extends State<AuthScreen> {
           ),
           const SizedBox(height: 5),
           const Text(
-              "Join Shippix-Business to manage your shipping",
-              style: TextStyle(color: Colors.grey),
+            "Join Shippix-Business to manage your shipping",
+            style: TextStyle(color: Colors.grey),
           ),
           const SizedBox(height: 20),
           _buildTextField(_businessNameController, "Business Name"),
@@ -173,12 +173,12 @@ class _AuthScreenState extends State<AuthScreen> {
               backgroundColor: const Color(0xFF116E5C),
             ),
             child: const Text(
-              "Create Business Account",
-              style: TextStyle(
+                "Create Business Account",
+                style: TextStyle(
                   fontSize: 18,
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
-              )
+                )
             ),
           ),
           const SizedBox(height: 20),
