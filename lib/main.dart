@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'features/auth/auth_screen.dart';
+import 'features/home/ui/home_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -16,7 +17,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.teal,
       ),
-      home: const AuthScreen(),  // Set AuthScreen as the home screen
+      home: const HomeScreen(),
     );
   }
 }
