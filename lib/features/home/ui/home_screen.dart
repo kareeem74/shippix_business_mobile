@@ -14,7 +14,6 @@ class HomeScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Icon(icon, size: 20, color: Colors.black54),
-          Icon(icon, size: 20, color: Colors.black54),
           const SizedBox(height: 10),
           Text(
             title,
