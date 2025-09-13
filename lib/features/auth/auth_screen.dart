@@ -53,80 +53,82 @@ class _AuthScreenState extends State<AuthScreen> {
   }
 
   Widget _buildSignInForm() {
-    return Column(
-      children: [
-        const SizedBox(height: 20),
-        const Text(
-          "Welcome Back!",
-          style: TextStyle(fontSize: 20,),
-        ),
-        const SizedBox(height: 5),
-        const Text(
-            "Sign in to your business account",
-            style: TextStyle(color: Colors.grey
-            )
-        ),
-        const SizedBox(height: 30),
-        _buildTextField(_signInUsernameController, "Username"),
-        const SizedBox(height: 15),
-        _buildTextField(_signInPasswordController, "Password", isPassword: true),
-        const SizedBox(height: 10),
-        Row(
-          children: [
-            Checkbox(
-              value: rememberMe,
-              onChanged: (val) {
-                setState(() {
-                  rememberMe = val ?? false;
-                });
-              },
-            ),
-            const Text("Remember me"),
-            const Spacer(),
-            TextButton(
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          const SizedBox(height: 20),
+          const Text(
+            "Welcome Back!",
+            style: TextStyle(fontSize: 20,),
+          ),
+          const SizedBox(height: 5),
+          const Text(
+              "Sign in to your business account",
+              style: TextStyle(color: Colors.grey
+              )
+          ),
+          const SizedBox(height: 30),
+          _buildTextField(_signInUsernameController, "Username"),
+          const SizedBox(height: 15),
+          _buildTextField(_signInPasswordController, "Password", isPassword: true),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Checkbox(
+                value: rememberMe,
+                onChanged: (val) {
+                  setState(() {
+                    rememberMe = val ?? false;
+                  });
+                },
+              ),
+              const Text("Remember me"),
+              const Spacer(),
+              TextButton(
+                onPressed: () {},
+                child: const Text("Forgot Password ?"),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          ElevatedButton(
               onPressed: () {},
-              child: const Text("Forgot Password ?"),
-            ),
-          ],
-        ),
-        const SizedBox(height: 20),
-        ElevatedButton(
-            onPressed: () {},
-            style: ElevatedButton.styleFrom(
-              minimumSize: const Size(double.infinity, 50),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
+              style: ElevatedButton.styleFrom(
+                minimumSize: const Size(double.infinity, 50),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                backgroundColor: const Color(0xFF116E5C),
               ),
-              backgroundColor: const Color(0xFF116E5C),
-            ),
-            child: const Text(
-              "Sign In",
-              style: TextStyle(
-                  fontSize: 18,
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold),
-            )
-        ),
-        const SizedBox(height: 20),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text("Don’t have an account? "),
-            GestureDetector(
-              onTap: () {
-                setState(() {
-                  isSignIn = false;
-                });
-              },
               child: const Text(
-                "Register here",
+                "Sign In",
                 style: TextStyle(
-                    color: Colors.teal, fontWeight: FontWeight.bold),
+                    fontSize: 18,
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold),
+              )
+          ),
+          const SizedBox(height: 20),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text("Don’t have an account? "),
+              GestureDetector(
+                onTap: () {
+                  setState(() {
+                    isSignIn = false;
+                  });
+                },
+                child: const Text(
+                  "Register here",
+                  style: TextStyle(
+                      color: Colors.teal, fontWeight: FontWeight.bold),
+                ),
               ),
-            ),
-          ],
-        ),
-      ],
+            ],
+          ),
+        ],
+      ),
     );
   }
 
