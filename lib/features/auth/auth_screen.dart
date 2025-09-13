@@ -12,6 +12,9 @@ class _AuthScreenState extends State<AuthScreen> {
   bool rememberMe = false;
   bool obscurePassword = true;
 
+  final _signInFormKey = GlobalKey<FormState>();
+  final _signUpFormKey = GlobalKey<FormState>();
+
   final _signInUsernameController = TextEditingController();
   final _signInPasswordController = TextEditingController();
 
@@ -25,11 +28,13 @@ class _AuthScreenState extends State<AuthScreen> {
   final _signUpPasswordController = TextEditingController();
   final _signUpRePasswordController = TextEditingController();
 
-  Widget _buildTextField(TextEditingController controller, String hint,
-      {bool isPassword = false}) {
-    return TextField(
+  Widget _buildTextFormField(
+      TextEditingController controller, String hint,
+      {bool isPassword = false, String? Function(String?)? validator}) {
+    return TextFormField(
       controller: controller,
       obscureText: isPassword && obscurePassword,
+      validator: validator,
       decoration: InputDecoration(
         hintText: hint,
         suffixIcon: isPassword
@@ -53,7 +58,8 @@ class _AuthScreenState extends State<AuthScreen> {
   }
 
   Widget _buildSignInForm() {
-    return SingleChildScrollView(
+    return Form(
+      key: _signInFormKey,
       child: Column(
         children: [
           const SizedBox(height: 20),
@@ -68,9 +74,22 @@ class _AuthScreenState extends State<AuthScreen> {
               )
           ),
           const SizedBox(height: 30),
-          _buildTextField(_signInUsernameController, "Username"),
+          _buildTextFormField(_signInUsernameController, "Username",
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter your username';
+                }
+                return null;
+              }),
           const SizedBox(height: 15),
-          _buildTextField(_signInPasswordController, "Password", isPassword: true),
+          _buildTextFormField(_signInPasswordController, "Password",
+              isPassword: true,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter your password';
+                }
+                return null;
+              }),
           const SizedBox(height: 10),
           Row(
             children: [
@@ -92,7 +111,11 @@ class _AuthScreenState extends State<AuthScreen> {
           ),
           const SizedBox(height: 20),
           ElevatedButton(
-              onPressed: () {},
+              onPressed: () {
+                if (_signInFormKey.currentState!.validate()) {
+                  // TODO: Implement sign in logic
+                }
+              },
               style: ElevatedButton.styleFrom(
                 minimumSize: const Size(double.infinity, 50),
                 shape: RoundedRectangleBorder(
@@ -133,76 +156,141 @@ class _AuthScreenState extends State<AuthScreen> {
   }
 
   Widget _buildSignUpForm() {
-    return SingleChildScrollView(
-      child: Column(
-        children: [
-          const SizedBox(height: 20),
-          const Text(
-            "Create your Business Account",
-            style: TextStyle(fontSize: 18,),
-          ),
-          const SizedBox(height: 5),
-          const Text(
-            "Join Shippix-Business to manage your shipping",
-            style: TextStyle(color: Colors.grey),
-          ),
-          const SizedBox(height: 20),
-          _buildTextField(_businessNameController, "Business Name"),
-          const SizedBox(height: 15),
-          _buildTextField(_ownerNameController, "Owner Name"),
-          const SizedBox(height: 15),
-          _buildTextField(_emailController, "Email Address"),
-          const SizedBox(height: 15),
-          _buildTextField(_nationalIdController, "National ID"),
-          const SizedBox(height: 15),
-          _buildTextField(_phoneController, "Phone Number"),
-          const SizedBox(height: 15),
-          _buildTextField(_pickupController, "Pick Up Location"),
-          const SizedBox(height: 15),
-          _buildTextField(_businessTypeController, "Business Type"),
-          const SizedBox(height: 15),
-          _buildTextField(_signUpPasswordController, "Password", isPassword: true),
-          const SizedBox(height: 15),
-          _buildTextField(_signUpRePasswordController, "Confirm Password", isPassword: true),
-          const SizedBox(height: 20),
-          ElevatedButton(
-            onPressed: () {},
-            style: ElevatedButton.styleFrom(
-              minimumSize: const Size(double.infinity, 50),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-              backgroundColor: const Color(0xFF116E5C),
+    return Form(
+      key: _signUpFormKey,
+      child: SingleChildScrollView(
+        child: Column(
+          children: [
+            const SizedBox(height: 20),
+            const Text(
+              "Create your Business Account",
+              style: TextStyle(fontSize: 18,),
             ),
-            child: const Text(
-                "Create Business Account",
-                style: TextStyle(
-                  fontSize: 18,
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                )
+            const SizedBox(height: 5),
+            const Text(
+              "Join Shippix-Business to manage your shipping",
+              style: TextStyle(color: Colors.grey),
             ),
-          ),
-          const SizedBox(height: 20),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Text("Already have an account? "),
-              GestureDetector(
-                onTap: () {
-                  setState(() {
-                    isSignIn = true;
-                  });
-                },
-                child: const Text(
-                  "Login here",
-                  style: TextStyle(
-                      color: Colors.teal, fontWeight: FontWeight.bold),
+            const SizedBox(height: 20),
+            _buildTextFormField(_businessNameController, "Business Name",
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter your business name';
+                  }
+                  if (!RegExp(r"^[a-zA-Z\s]+$").hasMatch(value)) {
+                    return 'Please enter characters only';
+                  }
+                  return null;
+                }),
+            const SizedBox(height: 15),
+            _buildTextFormField(_ownerNameController, "Owner Name",
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter your owner name';
+                  }
+                  if (!RegExp(r"^[a-zA-Z\s]+$").hasMatch(value)) {
+                    return 'Please enter characters only';
+                  }
+                  return null;
+                }),
+            const SizedBox(height: 15),
+            _buildTextFormField(_emailController, "Email Address",
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter your email address';
+                  }
+                  if (!RegExp(r"^[a-zA-Z0-9.]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
+                      .hasMatch(value)) {
+                    return 'Please enter a valid email address';
+                  }
+                  return null;
+                }),
+            const SizedBox(height: 15),
+            _buildTextFormField(_nationalIdController, "National ID"),
+            const SizedBox(height: 15),
+            _buildTextFormField(_phoneController, "Phone Number",
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter your phone number';
+                  }
+                  if (!RegExp(r"^[0-9]+$").hasMatch(value)) {
+                    return 'Please enter numbers only';
+                  }
+                  return null;
+                }),
+            const SizedBox(height: 15),
+            _buildTextFormField(_pickupController, "Pick Up Location"),
+            const SizedBox(height: 15),
+            _buildTextFormField(_businessTypeController, "Business Type"),
+            const SizedBox(height: 15),
+            _buildTextFormField(_signUpPasswordController, "Password",
+                isPassword: true,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter your password';
+                  }
+                  if (value.length < 6) {
+                    return 'Password must be at least 6 characters long';
+                  }
+                  return null;
+                }),
+            const SizedBox(height: 15),
+            _buildTextFormField(
+                _signUpRePasswordController, "Confirm Password",
+                isPassword: true,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please confirm your password';
+                  }
+                  if (value != _signUpPasswordController.text) {
+                    return 'Passwords do not match';
+                  }
+                  return null;
+                }),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                if (_signUpFormKey.currentState!.validate()) {
+                  // TODO: Implement sign up logic
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                minimumSize: const Size(double.infinity, 50),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
                 ),
+                backgroundColor: const Color(0xFF116E5C),
               ),
-            ],
-          ),
-        ],
+              child: const Text(
+                  "Create Business Account",
+                  style: TextStyle(
+                    fontSize: 18,
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  )
+              ),
+            ),
+            const SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Text("Already have an account? "),
+                GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      isSignIn = true;
+                    });
+                  },
+                  child: const Text(
+                    "Login here",
+                    style: TextStyle(
+                        color: Colors.teal, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
