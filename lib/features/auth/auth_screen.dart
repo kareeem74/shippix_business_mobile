@@ -126,7 +126,7 @@ class _AuthScreenState extends State<AuthScreen> {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  backgroundColor: const Color(0xFF116E5C),
+                  backgroundColor: const Color(0xFF1C7364),
                 ),
                 child: const Text(
                   "Sign In",
@@ -150,7 +150,7 @@ class _AuthScreenState extends State<AuthScreen> {
                   child: const Text(
                     "Register here",
                     style: TextStyle(
-                        color: Colors.teal, fontWeight: FontWeight.bold),
+                        color: Color(0xFF1C7364), fontWeight: FontWeight.bold),
                   ),
                 ),
               ],
@@ -265,7 +265,7 @@ class _AuthScreenState extends State<AuthScreen> {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),
-                backgroundColor: const Color(0xFF116E5C),
+                backgroundColor: const Color(0xFF1C7364),
               ),
               child: const Text(
                   "Create Business Account",
@@ -290,7 +290,7 @@ class _AuthScreenState extends State<AuthScreen> {
                   child: const Text(
                     "Login here",
                     style: TextStyle(
-                        color: Colors.teal, fontWeight: FontWeight.bold),
+                        color: Color(0xFF1C7364), fontWeight: FontWeight.bold),
                   ),
                 ),
               ],
@@ -343,7 +343,7 @@ class _AuthScreenState extends State<AuthScreen> {
                         },
                         child: Container(
                           decoration: BoxDecoration(
-                            color: isSignIn ? const Color(0xFF116E5C) : Colors.transparent,
+                            color: isSignIn ? const Color(0xFF1C7364) : Colors.transparent,
                             borderRadius: BorderRadius.circular(12),
                           ),
                           alignment: Alignment.center,
@@ -366,7 +366,7 @@ class _AuthScreenState extends State<AuthScreen> {
                         },
                         child: Container(
                           decoration: BoxDecoration(
-                            color: !isSignIn ? const Color(0xFF116E5C) : Colors.transparent,
+                            color: !isSignIn ? const Color(0xFF1C7364) : Colors.transparent,
                             borderRadius: BorderRadius.circular(12),
                           ),
                           alignment: Alignment.center,

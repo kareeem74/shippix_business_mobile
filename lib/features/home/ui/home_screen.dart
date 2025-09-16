@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../orders/new_order_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -50,7 +51,7 @@ class HomeScreen extends StatelessWidget {
           LinearProgressIndicator(
             value: progress,
             backgroundColor: Colors.grey.shade300,
-            color: Colors.green.shade700,
+            color: const Color(0xFF1C7364),
             minHeight: 6,
             borderRadius: BorderRadius.circular(8),
           ),
@@ -102,7 +103,7 @@ class HomeScreen extends StatelessWidget {
         title: const Text("Settings"),
         subtitle: Text(
           "Settings and Privacy",
-          style: TextStyle(color: Colors.green.shade700, fontSize: 12),
+          style: TextStyle(color: Color(0xFF1C7364), fontSize: 12),
         ),
         contentPadding: EdgeInsets.zero,
       ),
@@ -116,7 +117,7 @@ class HomeScreen extends StatelessWidget {
         title: const Text("Manage"),
         subtitle: Text(
           "Your Orders",
-          style: TextStyle(color: Colors.green.shade700, fontSize: 12),
+          style: TextStyle(color: Color(0xFF1C7364), fontSize: 12),
         ),
         contentPadding: EdgeInsets.zero,
       ),
@@ -149,10 +150,15 @@ class HomeScreen extends StatelessWidget {
         actions: [
           TextButton.icon(
             style: TextButton.styleFrom(
-              foregroundColor: Colors.green.shade700,
+              foregroundColor: const Color(0xFF1C7364),
               padding: const EdgeInsets.symmetric(horizontal: 10),
             ),
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const NewOrderScreen(showBackButton: true)),
+              );
+            },
             icon: const Icon(Icons.add_circle_outline),
             label: const Text("Create New Order"),
           ),
@@ -161,6 +167,7 @@ class HomeScreen extends StatelessWidget {
             onPressed: () {},
           ),
           PopupMenuButton<String>(
+            color: Colors.white,
             icon: const Icon(Icons.menu),
             onSelected: (String result) {},
             itemBuilder: _buildPopupMenuItems,
@@ -202,9 +209,9 @@ class HomeScreen extends StatelessWidget {
               children: const [
                 Text("Active Shipments",
                     style:
-                        TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                 Text("View All",
-                    style: TextStyle(color: Colors.green, fontSize: 14)),
+                    style: TextStyle(color: Color(0xFF1C7364), fontSize: 14)),
               ],
             ),
             const SizedBox(height: 12),
@@ -227,7 +234,7 @@ class HomeScreen extends StatelessWidget {
                 children: const [
                   Text("This Week's Performance",
                       style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                      TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                   SizedBox(height: 12),
                   Text("Delivery Success Rate: 96%"),
                   Text("Average Delivery Time: 2 days"),
@@ -239,20 +246,6 @@ class HomeScreen extends StatelessWidget {
             const SizedBox(height: 80),
           ],
         ),
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        selectedItemColor: Colors.green.shade700,
-        unselectedItemColor: Colors.grey,
-        type: BottomNavigationBarType.fixed,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.add_box_outlined), label: "New Order"),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.support_agent), label: "Support"),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.person_outline), label: "Account"),
-        ],
       ),
     );
   }

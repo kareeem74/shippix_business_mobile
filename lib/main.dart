@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'features/auth/auth_screen.dart';
-import 'features/home/ui/home_screen.dart';
+import 'features/main/main_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -12,12 +11,10 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      debugShowCheckedModeBanner: false,  // remove the debug banner
-      title: 'Shippix Business',
-      theme: ThemeData(
-        primarySwatch: Colors.teal,
+      debugShowCheckedModeBanner: false,
+      home: const MainScreen(
+        isLoggedIn: true,
       ),
-      home: const AuthScreen(),
     );
   }
 }
