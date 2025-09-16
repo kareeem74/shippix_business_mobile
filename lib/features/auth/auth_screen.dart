@@ -15,7 +15,7 @@ class _AuthScreenState extends State<AuthScreen> {
   final _signInFormKey = GlobalKey<FormState>();
   final _signUpFormKey = GlobalKey<FormState>();
 
-  final _signInUsernameController = TextEditingController();
+  final _signInEmailController = TextEditingController();
   final _signInPasswordController = TextEditingController();
 
   final _businessNameController = TextEditingController();
@@ -75,10 +75,14 @@ class _AuthScreenState extends State<AuthScreen> {
                 )
             ),
             const SizedBox(height: 30),
-            _buildTextFormField(_signInUsernameController, "Username",
+            _buildTextFormField(_signInEmailController, "Email",
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please enter your username';
+                    return 'Please enter your email address';
+                  }
+                  if (!RegExp(r"^[a-zA-Z0-9.]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
+                      .hasMatch(value)) {
+                    return 'Please enter a valid email address';
                   }
                   return null;
                 }),
