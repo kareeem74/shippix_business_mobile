@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shippix_mobile/features/home/ui/home_screen.dart';
 import 'package:shippix_mobile/features/main/main_screen.dart';
+import 'package:shippix_mobile/features/orders/review_order_screen.dart';
 
 class NewOrderScreen extends StatefulWidget {
   final bool showBackButton;
@@ -358,10 +359,14 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(30)),
             ),
-            onPressed:
-                () {
-                  //TODO: Navigate to payment screen
-                },
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const ReviewOrderScreen(orderId: "ORD-Afnan-1234"),
+                ),
+              );
+            },
             child: const Text("Next",
                 style: TextStyle(fontSize: 16, color: Colors.white)),
           ),
