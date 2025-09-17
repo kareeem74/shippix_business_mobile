@@ -11,6 +11,7 @@ class NewOrderScreen extends StatefulWidget {
 }
 
 class _NewOrderScreenState extends State<NewOrderScreen> {
+  final _formKey = GlobalKey<FormState>();
   bool _isCostCalculated = false;
 
   static const Color _primaryColor = Color(0xFF1C7364);
@@ -63,12 +64,17 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
     );
   }
 
-  Widget _buildTextField(String label, {String? hint, TextInputType type = TextInputType.text}) {
+  Widget _buildTextField(String label,
+      {String? hint,
+      TextInputType type = TextInputType.text,
+      String? prefixText,
+      String? Function(String?)? validator}) {
     return TextFormField(
       keyboardType: type,
       decoration: InputDecoration(
         labelText: label,
         hintText: hint,
+        prefixText: prefixText,
         hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
         floatingLabelStyle: const TextStyle(color: _primaryColor),
         border: OutlineInputBorder(
@@ -83,8 +89,11 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
           borderRadius: BorderRadius.circular(30),
           borderSide: const BorderSide(color: _primaryColor, width: 2.0),
         ),
-        contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
+        contentPadding:
+            const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
+        errorMaxLines: 2,
       ),
+      validator: validator,
     );
   }
 
@@ -96,7 +105,8 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
         scrolledUnderElevation: 0,
         leading: widget.showBackButton
             ? IconButton(
-                icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black, size: 20),
+                icon: const Icon(Icons.arrow_back_ios_new,
+                    color: Colors.black, size: 20),
                 onPressed: () {
                   Navigator.pop(context);
                 },
@@ -123,74 +133,145 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Customer Information
-            _buildSection(
-              icon: Icons.person_outline,
-              title: "Customer Information",
-              subtitle: "Details about your customer",
-              children: [
-                _buildTextField("Customer Name"),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Expanded(child: _buildTextField("Email Address", type: TextInputType.emailAddress)),
-                    const SizedBox(width: 12),
-                    Expanded(child: _buildTextField("Phone Number", type: TextInputType.phone)),
-                  ],
-                ),
-              ],
-            ),
-
-            // Delivery Information
-            _buildSection(
-              icon: Icons.local_shipping_outlined,
-              title: "Delivery Information",
-              subtitle: "Where should we deliver this order?",
-              children: [
-                _buildTextField("Street Address"),
-                const SizedBox(height: 12),
-                _buildTextField("City"),
-                const SizedBox(height: 12),
-                _buildTextField("Notes to Driver (Optional)"),
-                const SizedBox(height: 12),
-                const Align(
-                  alignment: Alignment.centerRight,
-                  child: Text(
-                    "Total Distance: 30Km",
-                    style: TextStyle(color: Colors.black54, fontSize: 13, fontWeight: FontWeight.w500),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Customer Information
+              _buildSection(
+                icon: Icons.person_outline,
+                title: "Customer Information",
+                subtitle: "Details about your customer",
+                children: [
+                  _buildTextField("Customer Name", validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter a customer name';
+                    }
+                    return null;
+                  }),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                          child: _buildTextField("Email Address",
+                              type: TextInputType.emailAddress,
+                              validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter an email address';
+                        }
+                        if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
+                          return 'Please enter a valid email address';
+                        }
+                        return null;
+                      })),
+                      const SizedBox(width: 12),
+                      Expanded(
+                          child: _buildTextField("Phone Number",
+                              type: TextInputType.phone,
+                              prefixText: "+20 ",
+                              validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter a phone number';
+                        }
+                        if (value.length != 11) {
+                          return 'Phone number must be 11 digits';
+                        }
+                        return null;
+                      })),
+                    ],
                   ),
-                ),
-              ],
-            ),
+                ],
+              ),
 
-            // Package Information
-            _buildSection(
-              icon: Icons.inventory_2_outlined,
-              title: "Package Information",
-              subtitle: "Details about what you are shipping",
-              children: [
-                _buildTextField("Items Description", hint: "e.g., Electronics, Clothing, Books"),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Expanded(child: _buildTextField("Total Weight (kg)", type: TextInputType.number)),
-                    const SizedBox(width: 12),
-                    Expanded(child: _buildTextField("Package Value (EGP)", type: TextInputType.number)),
-                  ],
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
+              // Delivery Information
+              _buildSection(
+                icon: Icons.local_shipping_outlined,
+                title: "Delivery Information",
+                subtitle: "Where should we deliver this order?",
+                children: [
+                  _buildTextField("Street Address", validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter a street address';
+                    }
+                    return null;
+                  }),
+                  const SizedBox(height: 12),
+                  _buildTextField("City", validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter a city';
+                    }
+                    return null;
+                  }),
+                  const SizedBox(height: 12),
+                  _buildTextField("Notes to Driver (Optional)"),
+                  const SizedBox(height: 12),
+                  const Align(
+                    alignment: Alignment.centerRight,
+                    child: Text(
+                      "Total Distance: 30Km",
+                      style: TextStyle(
+                          color: Colors.black54,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500),
+                    ),
+                  ),
+                ],
+              ),
 
-            // Conditional UI Block
-            if (!_isCostCalculated)
-              _buildCalculateButton()
-            else
-              _buildCostResultAndNextButton(),
-          ],
+              // Package Information
+              _buildSection(
+                icon: Icons.inventory_2_outlined,
+                title: "Package Information",
+                subtitle: "Details about what you are shipping",
+                children: [
+                  _buildTextField("Items Description",
+                      hint: "e.g., Electronics, Clothing, Books",
+                      validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter item(s) description';
+                    }
+                    return null;
+                  }),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                          child: _buildTextField("Total Weight (kg)",
+                              type: TextInputType.number, validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter a weight';
+                        }
+                        if (double.tryParse(value) == null) {
+                          return 'Please enter a valid number';
+                        }
+                        return null;
+                      })),
+                      const SizedBox(width: 12),
+                      Expanded(
+                          child: _buildTextField("Package Value (EGP)",
+                              type: TextInputType.number, validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter a value';
+                        }
+                        if (double.tryParse(value) == null) {
+                          return 'Please enter a valid number';
+                        }
+                        return null;
+                      })),
+                    ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+
+              // Conditional UI Block
+              if (!_isCostCalculated)
+                _buildCalculateButton()
+              else
+                _buildCostResultAndNextButton(),
+            ],
+          ),
         ),
       ),
     );
@@ -205,10 +286,16 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
           style: ElevatedButton.styleFrom(
             backgroundColor: const Color(0xFF263238),
             padding: const EdgeInsets.symmetric(vertical: 10),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
           ),
-          onPressed: () => setState(() => _isCostCalculated = true),
-          child: const Text("Calculate Shipping Cost", style: TextStyle(fontSize: 16, color: Colors.white)),
+          onPressed: () {
+            if (_formKey.currentState!.validate()) {
+              setState(() => _isCostCalculated = true);
+            }
+          },
+          child: const Text("Calculate Shipping Cost",
+              style: TextStyle(fontSize: 16, color: Colors.white)),
         ),
         const SizedBox(height: 8),
         const Text(
@@ -232,13 +319,22 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
           ),
           child: Row(
             children: [
-              Icon(Icons.monetization_on_outlined, color: _primaryColor, size: 30),
+              Icon(Icons.monetization_on_outlined,
+                  color: _primaryColor, size: 30),
               const SizedBox(width: 12),
               const Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Shipping Cost', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black)),
-                  Text('\$0.00 EGP', style: TextStyle(fontSize: 14, color: Colors.black54, fontWeight: FontWeight.w500)),
+                  Text('Shipping Cost',
+                      style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black)),
+                  Text('\$0.00 EGP',
+                      style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.black54,
+                          fontWeight: FontWeight.w500)),
                 ],
               ),
               const Spacer(),
@@ -259,11 +355,15 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF263238),
               padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 10),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30)),
             ),
-            onPressed: () { //TODO: Navigate to payment screen},
-            },
-            child: const Text("Next", style: TextStyle(fontSize: 16, color: Colors.white)),
+            onPressed:
+                () {
+                  //TODO: Navigate to payment screen
+                },
+            child: const Text("Next",
+                style: TextStyle(fontSize: 16, color: Colors.white)),
           ),
         ),
       ],

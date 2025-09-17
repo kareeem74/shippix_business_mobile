@@ -141,7 +141,7 @@ class HomeScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          "Shippix-Business",
+          "Business",
           style: TextStyle(
               fontWeight: FontWeight.bold, fontSize: 16, color: Colors.black),
         ),
@@ -156,7 +156,9 @@ class HomeScreen extends StatelessWidget {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const NewOrderScreen(showBackButton: true)),
+                MaterialPageRoute(
+                    builder: (context) =>
+                    const NewOrderScreen(showBackButton: true)),
               );
             },
             icon: const Icon(Icons.add_circle_outline),
@@ -185,21 +187,34 @@ class HomeScreen extends StatelessWidget {
             ),
             const SizedBox(height: 16),
 
-            // Top Stats
-            GridView.count(
-              crossAxisCount: 2,
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
-              childAspectRatio: 1.6,
-              children: [
-                _buildCard("Total Completed Orders", "40", Icons.inventory_2),
-                _buildCard("Active", "5", Icons.location_on_outlined),
-                _buildCard("Completed Today", "3", Icons.check_box_outlined),
-                _buildCard("Pending Pickup", "0", Icons.local_shipping_outlined),
-              ],
+            LayoutBuilder(
+              builder: (context, constraints) {
+                double cardWidth = (constraints.maxWidth - 12) / 2; // 2 columns + spacing
+                return Wrap(
+                  spacing: 12,
+                  runSpacing: 12,
+                  children: [
+                    SizedBox(
+                      width: cardWidth,
+                      child: _buildCard("Total Completed Orders", "40", Icons.inventory_2),
+                    ),
+                    SizedBox(
+                      width: cardWidth,
+                      child: _buildCard("Active", "5", Icons.location_on_outlined),
+                    ),
+                    SizedBox(
+                      width: cardWidth,
+                      child: _buildCard("Completed Today", "3", Icons.check_box_outlined),
+                    ),
+                    SizedBox(
+                      width: cardWidth,
+                      child: _buildCard("Pending Pickup", "0", Icons.local_shipping_outlined),
+                    ),
+                  ],
+                );
+              },
             ),
+
 
             const SizedBox(height: 24),
 
