@@ -148,6 +148,9 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
                     if (value == null || value.isEmpty) {
                       return 'Please enter a customer name';
                     }
+                    if (!RegExp(r'^[a-zA-Z\s]*$').hasMatch(value)) {
+                      return 'Customer name can only contain alphabetic characters and spaces';
+                    }
                     return null;
                   }),
                   const SizedBox(height: 12),
@@ -200,6 +203,9 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
                   _buildTextField("City", validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter a city';
+                    }
+                    if (!RegExp(r'^[a-zA-Z\s]*$').hasMatch(value)) {
+                      return 'City can only contain alphabetic characters and spaces';
                     }
                     return null;
                   }),
