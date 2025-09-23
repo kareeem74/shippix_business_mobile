@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../main/main_screen.dart';
+
 class OrderStatusScreen extends StatelessWidget {
   final String orderId;
   final String customer;
@@ -156,7 +158,12 @@ class OrderStatusScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(30)),
               ),
               onPressed: () {
-                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const MainScreen(isLoggedIn: true,),
+                  ),
+                );
               },
               child: const Text("Back to Dashboard",
                   style: TextStyle(fontSize: 16, color: Colors.white)),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shippix_mobile/features/orders/payment_screen.dart';
 
 class ReviewOrderScreen extends StatelessWidget {
   final String orderId;
@@ -148,7 +149,12 @@ class ReviewOrderScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(30)),
               ),
               onPressed: () {
-                // TODO: approve and create shipment logic
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const PaymentScreen(orderId: '11'),
+                  ),
+                );
               },
               child: const Text("Approve & Create Shipment",
                   style: TextStyle(fontSize: 16, color: Colors.white)),
