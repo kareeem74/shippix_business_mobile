@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../orders/new_order_screen.dart';
+import 'package:shippix_mobile/main.dart';
+import '../orders/new_order_screen.dart';
+import '../auth/auth_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -126,6 +128,7 @@ class HomeScreen extends StatelessWidget {
 
   PopupMenuItem<String> _buildMenuItem(IconData icon, String title) {
     return PopupMenuItem<String>(
+      value: title, // Add value to identify the selected item
       child: Row(
         children: [
           Icon(icon, color: Colors.black54),
@@ -171,7 +174,11 @@ class HomeScreen extends StatelessWidget {
           PopupMenuButton<String>(
             color: Colors.white,
             icon: const Icon(Icons.menu),
-            onSelected: (String result) {},
+            onSelected: (String result) async {
+              if (result == "Logout") {
+                authService.signOut();
+              }
+            },
             itemBuilder: _buildPopupMenuItems,
           ),
         ],

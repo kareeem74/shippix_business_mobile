@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import '../auth/auth_screen.dart';
-import '../home/ui/home_screen.dart';
+import '../home/home_screen.dart';
 import '../orders/new_order_screen.dart';
 
 class MainScreen extends StatefulWidget {
-  final bool isLoggedIn;
-  const MainScreen({super.key, required this.isLoggedIn});
+  const MainScreen({super.key});
 
   @override
   State<MainScreen> createState() => _MainScreenState();
@@ -29,11 +28,6 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // If not logged
-    if (!widget.isLoggedIn) {
-      return const AuthScreen();
-    }
-
     return Scaffold(
       body: _screens[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(

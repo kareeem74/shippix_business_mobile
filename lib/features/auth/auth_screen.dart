@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shippix_mobile/main.dart'; // Import global authService
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
@@ -11,6 +12,7 @@ class _AuthScreenState extends State<AuthScreen> {
   bool isSignIn = true;
   bool rememberMe = false;
   bool obscurePassword = true;
+  bool _isLoading = false;
 
   final _signInFormKey = GlobalKey<FormState>();
   final _signUpFormKey = GlobalKey<FormState>();
@@ -23,18 +25,50 @@ class _AuthScreenState extends State<AuthScreen> {
   final _emailController = TextEditingController();
   final _nationalIdController = TextEditingController();
   final _phoneController = TextEditingController();
-  final _pickupController = TextEditingController();
   final _businessTypeController = TextEditingController();
   final _signUpPasswordController = TextEditingController();
   final _signUpRePasswordController = TextEditingController();
+  final _latitudeController = TextEditingController();
+  final _longitudeController = TextEditingController();
+
+  @override
+  void dispose() {
+    _signInEmailController.dispose();
+    _signInPasswordController.dispose();
+    _businessNameController.dispose();
+    _ownerNameController.dispose();
+    _emailController.dispose();
+    _nationalIdController.dispose();
+    _phoneController.dispose();
+    _businessTypeController.dispose();
+    _signUpPasswordController.dispose();
+    _signUpRePasswordController.dispose();
+    _latitudeController.dispose();
+    _longitudeController.dispose();
+    super.dispose();
+  }
+
+  void _showSnackBar(String message, {bool isError = false}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: isError ? Colors.red : Colors.green,
+      ),
+    );
+  }
 
   Widget _buildTextFormField(
-      TextEditingController controller, String hint,
-      {bool isPassword = false, String? Function(String?)? validator}) {
+      TextEditingController controller,
+      String hint, {
+        bool isPassword = false,
+        String? Function(String?)? validator,
+        TextInputType keyboardType = TextInputType.text,
+      }) {
     return TextFormField(
       controller: controller,
       obscureText: isPassword && obscurePassword,
       validator: validator,
+      keyboardType: keyboardType,
       decoration: InputDecoration(
         hintText: hint,
         suffixIcon: isPassword
@@ -52,7 +86,8 @@ class _AuthScreenState extends State<AuthScreen> {
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(30),
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+        contentPadding:
+        const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
       ),
     );
   }
@@ -66,35 +101,40 @@ class _AuthScreenState extends State<AuthScreen> {
             const SizedBox(height: 20),
             const Text(
               "Welcome Back!",
-              style: TextStyle(fontSize: 20,),
+              style: TextStyle(fontSize: 20),
             ),
             const SizedBox(height: 5),
             const Text(
-                "Sign in to your business account",
-                style: TextStyle(color: Colors.grey
-                )
+              "Sign in to your business account",
+              style: TextStyle(color: Colors.grey),
             ),
             const SizedBox(height: 30),
-            _buildTextFormField(_signInEmailController, "Email",
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your email address';
-                  }
-                  if (!RegExp(r"^[a-zA-Z0-9.]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
-                      .hasMatch(value)) {
-                    return 'Please enter a valid email address';
-                  }
-                  return null;
-                }),
+            _buildTextFormField(
+              _signInEmailController,
+              "Email",
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter your email address';
+                }
+                if (!RegExp(r"^[a-zA-Z0-9.]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
+                    .hasMatch(value)) {
+                  return 'Please enter a valid email address';
+                }
+                return null;
+              },
+            ),
             const SizedBox(height: 15),
-            _buildTextFormField(_signInPasswordController, "Password",
-                isPassword: true,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your password';
-                  }
-                  return null;
-                }),
+            _buildTextFormField(
+              _signInPasswordController,
+              "Password",
+              isPassword: true,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter your password';
+                }
+                return null;
+              },
+            ),
             const SizedBox(height: 10),
             Row(
               children: [
@@ -115,26 +155,44 @@ class _AuthScreenState extends State<AuthScreen> {
               ],
             ),
             const SizedBox(height: 20),
-            ElevatedButton(
-                onPressed: () {
-                  if (_signInFormKey.currentState!.validate()) {
-                    // TODO: Implement sign in logic
+            _isLoading
+                ? const CircularProgressIndicator()
+                : ElevatedButton(
+              onPressed: () async {
+                if (_signInFormKey.currentState!.validate()) {
+                  setState(() {
+                    _isLoading = true;
+                  });
+                  try {
+                    final response = await authService.signIn(
+                      email: _signInEmailController.text,
+                      password: _signInPasswordController.text,
+                    );
+                    _showSnackBar('Sign In Successful');
+                    print("Sign In Successful: ${response.data}");
+                  } catch (e) {
+                    _showSnackBar(e.toString(), isError: true);
+                  } finally {
+                    setState(() {
+                      _isLoading = false;
+                    });
                   }
-                },
-                style: ElevatedButton.styleFrom(
-                  minimumSize: const Size(double.infinity, 50),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  backgroundColor: const Color(0xFF1C7364),
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                minimumSize: const Size(double.infinity, 50),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30),
                 ),
-                child: const Text(
-                  "Sign In",
-                  style: TextStyle(
-                      fontSize: 18,
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold),
-                )
+                backgroundColor: const Color(0xFF1C7364),
+              ),
+              child: const Text(
+                "Sign In",
+                style: TextStyle(
+                    fontSize: 18,
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold),
+              ),
             ),
             const SizedBox(height: 20),
             Row(
@@ -150,14 +208,15 @@ class _AuthScreenState extends State<AuthScreen> {
                   child: const Text(
                     "Register here",
                     style: TextStyle(
-                        color: Color(0xFF1C7364), fontWeight: FontWeight.bold),
+                        color: Color(0xFF1C7364),
+                        fontWeight: FontWeight.bold),
                   ),
                 ),
               ],
             ),
           ],
-        )
-      )
+        ),
+      ),
     );
   }
 
@@ -170,7 +229,7 @@ class _AuthScreenState extends State<AuthScreen> {
             const SizedBox(height: 20),
             const Text(
               "Create your Business Account",
-              style: TextStyle(fontSize: 18,),
+              style: TextStyle(fontSize: 18),
             ),
             const SizedBox(height: 5),
             const Text(
@@ -178,86 +237,160 @@ class _AuthScreenState extends State<AuthScreen> {
               style: TextStyle(color: Colors.grey),
             ),
             const SizedBox(height: 20),
-            _buildTextFormField(_businessNameController, "Business Name",
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your business name';
-                  }
-                  if (!RegExp(r"^[a-zA-Z\s]+$").hasMatch(value)) {
-                    return 'Please enter characters only';
-                  }
-                  return null;
-                }),
+            _buildTextFormField(
+              _businessNameController,
+              "Business Name",
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter your business name';
+                }
+                if (!RegExp(r"^[a-zA-Z\s]+$").hasMatch(value)) {
+                  return 'Please enter characters only';
+                }
+                return null;
+              },
+            ),
             const SizedBox(height: 15),
-            _buildTextFormField(_ownerNameController, "Owner Name",
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your owner name';
-                  }
-                  if (!RegExp(r"^[a-zA-Z\s]+$").hasMatch(value)) {
-                    return 'Please enter characters only';
-                  }
-                  return null;
-                }),
+            _buildTextFormField(
+              _ownerNameController,
+              "Owner Name",
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter your owner name';
+                }
+                if (!RegExp(r"^[a-zA-Z\s]+$").hasMatch(value)) {
+                  return 'Please enter characters only';
+                }
+                return null;
+              },
+            ),
             const SizedBox(height: 15),
-            _buildTextFormField(_emailController, "Email Address",
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your email address';
-                  }
-                  if (!RegExp(r"^[a-zA-Z0-9.]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
-                      .hasMatch(value)) {
-                    return 'Please enter a valid email address';
-                  }
-                  return null;
-                }),
+            _buildTextFormField(
+              _emailController,
+              "Email Address",
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter your email address';
+                }
+                if (!RegExp(r"^[a-zA-Z0-9.]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
+                    .hasMatch(value)) {
+                  return 'Please enter a valid email address';
+                }
+                return null;
+              },
+            ),
             const SizedBox(height: 15),
             _buildTextFormField(_nationalIdController, "National ID"),
             const SizedBox(height: 15),
-            _buildTextFormField(_phoneController, "Phone Number",
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your phone number';
-                  }
-                  if (!RegExp(r"^[0-9]+$").hasMatch(value)) {
-                    return 'Please enter numbers only';
-                  }
-                  return null;
-                }),
-            const SizedBox(height: 15),
-            _buildTextFormField(_pickupController, "Pick Up Location"),
+            _buildTextFormField(
+              _phoneController,
+              "Phone Number",
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter your phone number';
+                }
+                if (!RegExp(r"^[0-9]+$").hasMatch(value)) {
+                  return 'Please enter numbers only';
+                }
+                return null;
+              },
+            ),
             const SizedBox(height: 15),
             _buildTextFormField(_businessTypeController, "Business Type"),
             const SizedBox(height: 15),
-            _buildTextFormField(_signUpPasswordController, "Password",
-                isPassword: true,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your password';
-                  }
-                  if (value.length < 6) {
-                    return 'Password must be at least 6 characters long';
-                  }
-                  return null;
-                }),
+            _buildTextFormField(
+              _latitudeController,
+              "Latitude",
+              keyboardType: TextInputType.number,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter latitude';
+                }
+                if (double.tryParse(value) == null) {
+                  return 'Please enter a valid number';
+                }
+                return null;
+              },
+            ),
             const SizedBox(height: 15),
             _buildTextFormField(
-                _signUpRePasswordController, "Confirm Password",
-                isPassword: true,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please confirm your password';
-                  }
-                  if (value != _signUpPasswordController.text) {
-                    return 'Passwords do not match';
-                  }
-                  return null;
-                }),
+              _longitudeController,
+              "Longitude",
+              keyboardType: TextInputType.number,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter longitude';
+                }
+                if (double.tryParse(value) == null) {
+                  return 'Please enter a valid number';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 15),
+            _buildTextFormField(
+              _signUpPasswordController,
+              "Password",
+              isPassword: true,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter your password';
+                }
+                if (value.length < 6) {
+                  return 'Password must be at least 6 characters long';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 15),
+            _buildTextFormField(
+              _signUpRePasswordController,
+              "Confirm Password",
+              isPassword: true,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please confirm your password';
+                }
+                if (value != _signUpPasswordController.text) {
+                  return 'Passwords do not match';
+                }
+                return null;
+              },
+            ),
             const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
+            _isLoading
+                ? const CircularProgressIndicator()
+                : ElevatedButton(
+              onPressed: () async {
                 if (_signUpFormKey.currentState!.validate()) {
-                  // TODO: Implement sign up logic
+                  setState(() {
+                    _isLoading = true;
+                  });
+                  try {
+                    final response = await authService.signUp(
+                      businessName: _businessNameController.text,
+                      ownerName: _ownerNameController.text,
+                      email: _emailController.text,
+                      nationalId: _nationalIdController.text,
+                      phoneNumber: _phoneController.text,
+                      latitude: double.parse(_latitudeController.text),
+                      longitude: double.parse(_longitudeController.text),
+                      businessType: _businessTypeController.text,
+                      password: _signUpPasswordController.text,
+                      confirmPassword: _signUpRePasswordController.text,
+                    );
+                    _showSnackBar(
+                        'Sign Up Successful: ${response.data}');
+                    setState(() {
+                      isSignIn = true;
+                    });
+                  } catch (e) {
+                    _showSnackBar(e.toString(), isError: true);
+                  } finally {
+                    setState(() {
+                      _isLoading = false;
+                    });
+                  }
                 }
               },
               style: ElevatedButton.styleFrom(
@@ -268,12 +401,12 @@ class _AuthScreenState extends State<AuthScreen> {
                 backgroundColor: const Color(0xFF1C7364),
               ),
               child: const Text(
-                  "Create Business Account",
-                  style: TextStyle(
-                    fontSize: 18,
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  )
+                "Create Business Account",
+                style: TextStyle(
+                  fontSize: 18,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
             const SizedBox(height: 20),
@@ -290,7 +423,8 @@ class _AuthScreenState extends State<AuthScreen> {
                   child: const Text(
                     "Login here",
                     style: TextStyle(
-                        color: Color(0xFF1C7364), fontWeight: FontWeight.bold),
+                        color: Color(0xFF1C7364),
+                        fontWeight: FontWeight.bold),
                   ),
                 ),
               ],
@@ -317,9 +451,10 @@ class _AuthScreenState extends State<AuthScreen> {
                   const Text(
                     "Shippix-Business",
                     style: TextStyle(
-                        fontSize: 26,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87),
+                      fontSize: 26,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
                   ),
                 ],
               ),
@@ -343,7 +478,9 @@ class _AuthScreenState extends State<AuthScreen> {
                         },
                         child: Container(
                           decoration: BoxDecoration(
-                            color: isSignIn ? const Color(0xFF1C7364) : Colors.transparent,
+                            color: isSignIn
+                                ? const Color(0xFF1C7364)
+                                : Colors.transparent,
                             borderRadius: BorderRadius.circular(12),
                           ),
                           alignment: Alignment.center,
@@ -366,7 +503,9 @@ class _AuthScreenState extends State<AuthScreen> {
                         },
                         child: Container(
                           decoration: BoxDecoration(
-                            color: !isSignIn ? const Color(0xFF1C7364) : Colors.transparent,
+                            color: !isSignIn
+                                ? const Color(0xFF1C7364)
+                                : Colors.transparent,
                             borderRadius: BorderRadius.circular(12),
                           ),
                           alignment: Alignment.center,

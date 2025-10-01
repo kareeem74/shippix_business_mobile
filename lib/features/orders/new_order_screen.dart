@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:shippix_mobile/features/home/ui/home_screen.dart';
+import 'package:shippix_mobile/features/home/home_screen.dart';
 import 'package:shippix_mobile/features/main/main_screen.dart';
 import 'package:shippix_mobile/features/orders/review_order_screen.dart';
 

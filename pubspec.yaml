@@ -30,10 +30,12 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  dio: ^5.9.0 # Added dio package
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
-  cupertino_icons: ^1.0.8
+  cupertino_icons: any
+  rxdart: ^0.28.0
 
 dev_dependencies:
   flutter_test:
@@ -44,11 +46,11 @@ dev_dependencies:
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
-  flutter_lints: ^5.0.0
+  flutter_lints: any
 
-  flutter_native_splash: ^2.4.0
+  flutter_native_splash: any
 
-  flutter_launcher_icons: ^0.14.1
+  flutter_launcher_icons: any
 
 
 
@@ -75,7 +77,7 @@ flutter:
 
   # To add custom fonts to your application, add a fonts section here,
   # in this "flutter" section. Each entry in this list should have a
-  # "family" key with the font family name, and a "fonts" key with a
+  # "family" key with the font family name, and "fonts" key with a
   # list giving the asset and other descriptors for the font. For
   # example:
   # fonts:
@@ -92,7 +94,6 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
-
 flutter_native_splash:
   color: "#ffffff"
   image: assets/images/shippix_logo.png

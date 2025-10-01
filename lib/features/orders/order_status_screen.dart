@@ -161,7 +161,7 @@ class OrderStatusScreen extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const MainScreen(isLoggedIn: true,),
+                    builder: (context) => const MainScreen(),
                   ),
                 );
               },
