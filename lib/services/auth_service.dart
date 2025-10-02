@@ -1,19 +1,51 @@
 import 'package:dio/dio.dart';
-import 'package:rxdart/rxdart.dart'; // BehaviorSubject
+import 'package:rxdart/rxdart.dart';
+import 'dart:async';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class AuthService {
   final Dio _dio = Dio(BaseOptions(baseUrl: 'http://10.0.2.2:8080'));
+  final _storage = const FlutterSecureStorage();
   String? _currentUserToken;
+  String? _refreshToken;
+  Timer? _refreshTokenTimer;
+
+  String? get currentUserToken => _currentUserToken;
 
   final BehaviorSubject<bool> _authStateController =
-  BehaviorSubject<bool>.seeded(false);
+      BehaviorSubject<bool>(); // Removed initial seed
 
   Stream<bool> get authStateChanges => _authStateController.stream;
 
   bool get currentAuthStatus => _currentUserToken != null;
 
   AuthService() {
-    _authStateController.add(currentAuthStatus);
+    _attemptAutoSignIn().then((_) {
+      _authStateController.add(currentAuthStatus);
+    });
+  }
+
+  // method to attempt auto sign-in
+  Future<void> _attemptAutoSignIn() async {
+    _refreshToken = await _getRefreshToken();
+    if (_refreshToken != null) {
+      await _refreshTokenAccess(rememberMe: true);
+    }
+  }
+
+  // method to save the refresh token
+  Future<void> _saveRefreshToken(String token) async {
+    await _storage.write(key: 'refreshToken', value: token);
+  }
+
+  // method to retrieve the refresh token
+  Future<String?> _getRefreshToken() async {
+    return await _storage.read(key: 'refreshToken');
+  }
+
+  // method to delete the refresh token
+  Future<void> _deleteRefreshToken() async {
+    await _storage.delete(key: 'refreshToken');
   }
 
   Future<Response> signUp({
@@ -45,13 +77,8 @@ class AuthService {
         },
       );
 
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        _currentUserToken = response.data['token'];
-        _authStateController.add(true);
-      }
       return response;
     } on DioException catch (e) {
-      print('DioException during signUp: ${e.response?.data ?? e.message}');
       throw Exception(_handleDioError(e, 'Sign Up Failed'));
     }
   }
@@ -59,6 +86,7 @@ class AuthService {
   Future<Response> signIn({
     required String email,
     required String password,
+    bool rememberMe = false, // Add rememberMe parameter
   }) async {
     try {
       final response = await _dio.post(
@@ -70,20 +98,70 @@ class AuthService {
       );
 
       if (response.statusCode == 200) {
-        _currentUserToken = response.data['token'];
+        _currentUserToken = response.data['accessToken'];
+        _refreshToken = response.data['refreshToken'];
+        if (_refreshToken != null && rememberMe) { // Only save if rememberMe is true
+          await _saveRefreshToken(_refreshToken!); // Save the refresh token securely
+        }
         _authStateController.add(true);
+        _startTokenRefreshTimer(); // start refresh timer
       }
       return response;
     } on DioException catch (e) {
-      print('DioException during signIn: ${e.response?.data ?? e.message}');
       throw Exception(_handleDioError(e, 'Sign In Failed'));
     }
   }
 
   void signOut() {
     _currentUserToken = null;
+    _refreshToken = null;
+    _refreshTokenTimer?.cancel();
     _authStateController.add(false);
+    _deleteRefreshToken(); // Delete refresh token from secure storage
   }
+
+  // method to start the periodic token refresh
+  void _startTokenRefreshTimer() {
+    _refreshTokenTimer?.cancel();
+    _refreshTokenTimer = Timer.periodic(const Duration(minutes: 5), (timer) {
+      _refreshTokenAccess(rememberMe: true); // Pass rememberMe to _refreshTokenAccess
+    });
+  }
+
+  // method to refresh the access token
+  Future<void> _refreshTokenAccess({required bool rememberMe}) async {
+    if (_refreshToken == null) {
+      signOut(); // no refresh token, force sign out
+      return;
+    }
+
+    try {
+      final response = await _dio.post(
+        '/api/auth/refresh',
+        data: {
+          "refreshToken": _refreshToken,
+        },
+      );
+
+      if (response.statusCode == 200) {
+        _currentUserToken = response.data['accessToken'];
+        // Optionally, update _refreshToken if the API returns a new one
+        if (response.data['refreshToken'] != null) {
+          _refreshToken = response.data['refreshToken'];
+          if (rememberMe) { // Only save if rememberMe is true
+            await _saveRefreshToken(_refreshToken!); // Save the new refresh token
+          }
+        }
+        _authStateController.add(true); // ensure auth state is true
+      } else {
+        signOut();
+      }
+    } on DioException catch (e) {
+      print('Token refresh failed: ${_handleDioError(e, 'Token Refresh Failed')}');
+      signOut(); // on error > sign out
+    }
+  }
+
 
   String _handleDioError(DioException e, String defaultMsg) {
     if (e.response != null) {
@@ -102,5 +180,6 @@ class AuthService {
 
   void dispose() {
     _authStateController.close();
+    _refreshTokenTimer?.cancel(); // cancel timer on dispose
   }
 }

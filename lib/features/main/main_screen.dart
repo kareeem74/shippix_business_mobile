@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../auth/auth_screen.dart';
 import '../home/home_screen.dart';
 import '../orders/new_order_screen.dart';
 

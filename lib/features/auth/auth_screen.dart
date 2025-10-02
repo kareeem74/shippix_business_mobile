@@ -167,9 +167,9 @@ class _AuthScreenState extends State<AuthScreen> {
                     final response = await authService.signIn(
                       email: _signInEmailController.text,
                       password: _signInPasswordController.text,
+                      rememberMe: rememberMe, // Pass the rememberMe state
                     );
                     _showSnackBar('Sign In Successful');
-                    print("Sign In Successful: ${response.data}");
                   } catch (e) {
                     _showSnackBar(e.toString(), isError: true);
                   } finally {

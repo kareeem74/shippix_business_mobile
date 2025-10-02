@@ -6,8 +6,6 @@ class ReviewOrderScreen extends StatelessWidget {
 
   const ReviewOrderScreen({super.key, required this.orderId});
 
-  static const Color _primaryColor = Color(0xFF1C7364);
-
   Widget _buildInfoCard(IconData icon, String title, List<Widget> children) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
