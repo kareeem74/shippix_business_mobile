@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shippix_mobile/features/orders/review_order_screen.dart';
-import 'package:shippix_mobile/services/api_service.dart';
+import 'package:shippix_mobile/services/order_service.dart';
 
 class NewOrderScreen extends StatefulWidget {
   final bool showBackButton;

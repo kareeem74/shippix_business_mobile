@@ -106,11 +106,11 @@ class AuthService {
       if (response.statusCode == 200) {
         _currentUserToken = response.data['accessToken'];
         _refreshToken = response.data['refreshToken'];
-        if (_refreshToken != null && rememberMe) { // Only save if rememberMe is true
-          await _saveRefreshToken(_refreshToken!); // Save the refresh token securely
+        if (_refreshToken != null && rememberMe) {
+          await _saveRefreshToken(_refreshToken!);
         }
         _authStateController.add(true);
-        _startTokenRefreshTimer(); // start refresh timer
+        _startTokenRefreshTimer();
       }
       return response;
     } on DioException catch (e) {
@@ -176,7 +176,7 @@ class AuthService {
     _refreshToken = null;
     _refreshTokenTimer?.cancel();
     _authStateController.add(false);
-    _deleteRefreshToken(); // Delete refresh token from secure storage
+    _deleteRefreshToken();
   }
 
   // method to start the periodic token refresh
