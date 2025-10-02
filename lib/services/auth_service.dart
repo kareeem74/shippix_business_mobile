@@ -4,26 +4,32 @@ import 'dart:async';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class AuthService {
-  final Dio _dio = Dio(BaseOptions(baseUrl: 'http://10.0.2.2:8080'));
-  final _storage = const FlutterSecureStorage();
-  String? _currentUserToken;
-  String? _refreshToken;
-  Timer? _refreshTokenTimer;
+  static final AuthService _instance = AuthService._internal();
 
-  String? get currentUserToken => _currentUserToken;
+  factory AuthService() {
+    return _instance;
+  }
 
-  final BehaviorSubject<bool> _authStateController =
-      BehaviorSubject<bool>(); // Removed initial seed
-
-  Stream<bool> get authStateChanges => _authStateController.stream;
-
-  bool get currentAuthStatus => _currentUserToken != null;
-
-  AuthService() {
+  AuthService._internal() {
     _attemptAutoSignIn().then((_) {
       _authStateController.add(currentAuthStatus);
     });
   }
+
+  final Dio _dio = Dio(BaseOptions(baseUrl: 'http://10.0.2.2:8080'));
+  final _storage = const FlutterSecureStorage();
+  static String? _currentUserToken;
+  static String? _refreshToken;
+  static Timer? _refreshTokenTimer;
+
+  String? get currentUserToken => _currentUserToken;
+
+  static final BehaviorSubject<bool> _authStateController =
+      BehaviorSubject<bool>();
+
+  Stream<bool> get authStateChanges => _authStateController.stream;
+
+  bool get currentAuthStatus => _currentUserToken != null;
 
   // method to attempt auto sign-in
   Future<void> _attemptAutoSignIn() async {
@@ -236,4 +242,3 @@ class AuthService {
     _refreshTokenTimer?.cancel(); // cancel timer on dispose
   }
 }
-

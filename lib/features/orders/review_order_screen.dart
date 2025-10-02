@@ -1,10 +1,47 @@
 import 'package:flutter/material.dart';
 import 'package:shippix_mobile/features/orders/payment_screen.dart';
+import 'package:shippix_mobile/services/api_service.dart';
 
-class ReviewOrderScreen extends StatelessWidget {
-  final String orderId;
+class ReviewOrderScreen extends StatefulWidget {
+  final int orderId;
 
   const ReviewOrderScreen({super.key, required this.orderId});
+
+  @override
+  State<ReviewOrderScreen> createState() => _ReviewOrderScreenState();
+}
+
+class _ReviewOrderScreenState extends State<ReviewOrderScreen> {
+  Map<String, dynamic>? _orderDetails;
+  bool _isLoading = true;
+  final ApiService _apiService = ApiService();
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchOrderDetails();
+  }
+
+  Future<void> _fetchOrderDetails() async {
+    print('Fetching order details for ID: ${widget.orderId}'); // Added print statement
+    try {
+      final data = await _apiService.getOrderDetails(widget.orderId);
+      print('Order details fetched: $data'); // Added print statement
+      setState(() {
+        _orderDetails = data;
+        _isLoading = false;
+      });
+    } catch (e) {
+      print('Error fetching order details: $e');
+      setState(() {
+        _isLoading = false;
+      });
+      // Optionally show an error message to the user
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to load order details: $e')),
+      );
+    }
+  }
 
   Widget _buildInfoCard(IconData icon, String title, List<Widget> children) {
     return Container(
@@ -79,41 +116,44 @@ class ReviewOrderScreen extends StatelessWidget {
                     fontWeight: FontWeight.bold,
                     fontSize: 18,
                     color: Colors.black)),
-            Text("Order #$orderId",
+            Text("Order #${widget.orderId.toString()}",
                 style: const TextStyle(
                     fontSize: 13, color: Colors.black54)),
           ],
         ),
       ),
-      body: SingleChildScrollView(
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _orderDetails == null
+          ? const Center(child: Text('Failed to load order details.'))
+          : SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
             // Customer Info
             _buildInfoCard(Icons.person_outline, "Customer Information", [
-              _buildRow("Customer Name:", "Afnan Sayed"),
-              _buildRow("Email Address:", "afnansayed04@gmail.com"),
-              _buildRow("Phone Number:", "01065464044"),
-              _buildRow("Order Date:", "14-5-2025"),
+              _buildRow("Customer Name:", _orderDetails?['custName'] ?? 'N/A'),
+              _buildRow("Email Address:", _orderDetails?['custEmail'] ?? 'N/A'),
+              _buildRow("Phone Number:", _orderDetails?['custPhoneNumber'] ?? 'N/A'),
+              _buildRow("Order Date:", _orderDetails?['reviewedAt'] ?? 'N/A'),
             ]),
 
             // Delivery Info
             _buildInfoCard(Icons.location_on_outlined, "Delivery Information", [
-              _buildRow("Street Address:", "str1234"),
-              _buildRow("City:", "QBA"),
-              _buildRow("Total Distance:", "30 Km"),
+              // From and To latitude/longitude are not directly mapped to display, assuming they are used for distance calculation
+              _buildRow("Total Distance:", "${_orderDetails?['deliveryDistance'] ?? 'N/A'} Km"),
             ]),
 
             // Package Info
             _buildInfoCard(Icons.inventory_2_outlined, "Package Information", [
-              _buildRow("Items Description:", "Electronic Devices"),
-              _buildRow("Total Weight:", "10 Kg"),
-              _buildRow("Package Value (EGP):", "10,000"),
+              _buildRow("Items Description:", _orderDetails?['orderDescription'] ?? 'N/A'),
+              _buildRow("Total Weight:", "${_orderDetails?['packageWeight'] ?? 'N/A'} Kg"),
+              _buildRow("Package Value (EGP):", "${_orderDetails?['packageValue'] ?? 'N/A'}"),
             ]),
 
             // Shipping Cost
             _buildInfoCard(Icons.attach_money, "Shipping Cost", [
-              _buildRow("Cost:", "50.00 EGP"),
+              _buildRow("Cost:", "${_orderDetails?['calculatedPrice'] ?? 'N/A'} EGP"),
             ]),
 
             // Order Status
@@ -127,8 +167,8 @@ class ReviewOrderScreen extends StatelessWidget {
                       color: Colors.green.shade100,
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Text("processing",
-                        style: TextStyle(color: Colors.green, fontSize: 12)),
+                    child: Text(_orderDetails?['decision'] ?? 'N/A',
+                        style: const TextStyle(color: Colors.green, fontSize: 12)),
                   ),
                   const SizedBox(width: 8),
                   const Text("Awaiting review and approval",
@@ -150,7 +190,7 @@ class ReviewOrderScreen extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const PaymentScreen(orderId: '11'),
+                    builder: (context) => PaymentScreen(orderId: widget.orderId.toString()),
                   ),
                 );
               },

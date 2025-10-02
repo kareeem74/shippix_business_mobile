@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shippix_mobile/features/orders/review_order_screen.dart';
+import 'package:shippix_mobile/services/api_service.dart';
 
 class NewOrderScreen extends StatefulWidget {
   final bool showBackButton;
@@ -12,6 +13,23 @@ class NewOrderScreen extends StatefulWidget {
 class _NewOrderScreenState extends State<NewOrderScreen> {
   final _formKey = GlobalKey<FormState>();
   bool _isCostCalculated = false;
+
+  double? _calculatedPrice;
+  String? _currency;
+  double? _deliveryDistance;
+  int? _orderRequestId; // To store the reqId for ReviewOrderScreen
+
+  final ApiService _apiService = ApiService();
+
+  final TextEditingController _customerNameController = TextEditingController();
+  final TextEditingController _emailAddressController = TextEditingController();
+  final TextEditingController _phoneNumberController = TextEditingController();
+  final TextEditingController _streetAddressController = TextEditingController();
+  final TextEditingController _cityController = TextEditingController();
+  final TextEditingController _notesToDriverController = TextEditingController();
+  final TextEditingController _itemsDescriptionController = TextEditingController();
+  final TextEditingController _totalWeightController = TextEditingController();
+  final TextEditingController _packageValueController = TextEditingController();
 
   static const Color _primaryColor = Color(0xFF1C7364);
 
@@ -67,8 +85,10 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
       {String? hint,
       TextInputType type = TextInputType.text,
       String? prefixText,
-      String? Function(String?)? validator}) {
+      String? Function(String?)? validator,
+      required TextEditingController controller}) {
     return TextFormField(
+      controller: controller,
       keyboardType: type,
       decoration: InputDecoration(
         labelText: label,
@@ -94,6 +114,20 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
       ),
       validator: validator,
     );
+  }
+
+  @override
+  void dispose() {
+    _customerNameController.dispose();
+    _emailAddressController.dispose();
+    _phoneNumberController.dispose();
+    _streetAddressController.dispose();
+    _cityController.dispose();
+    _notesToDriverController.dispose();
+    _itemsDescriptionController.dispose();
+    _totalWeightController.dispose();
+    _packageValueController.dispose();
+    super.dispose();
   }
 
   @override
@@ -143,7 +177,9 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
                 title: "Customer Information",
                 subtitle: "Details about your customer",
                 children: [
-                  _buildTextField("Customer Name", validator: (value) {
+                  _buildTextField("Customer Name",
+                      controller: _customerNameController,
+                      validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter a customer name';
                     }
@@ -157,6 +193,7 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
                     children: [
                       Expanded(
                           child: _buildTextField("Email Address",
+                              controller: _emailAddressController,
                               type: TextInputType.emailAddress,
                               validator: (value) {
                         if (value == null || value.isEmpty) {
@@ -170,6 +207,7 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
                       const SizedBox(width: 12),
                       Expanded(
                           child: _buildTextField("Phone Number",
+                              controller: _phoneNumberController,
                               type: TextInputType.phone,
                               prefixText: "+20 ",
                               validator: (value) {
@@ -192,14 +230,18 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
                 title: "Delivery Information",
                 subtitle: "Where should we deliver this order?",
                 children: [
-                  _buildTextField("Street Address", validator: (value) {
+                  _buildTextField("Street Address",
+                      controller: _streetAddressController,
+                      validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter a street address';
                     }
                     return null;
                   }),
                   const SizedBox(height: 12),
-                  _buildTextField("City", validator: (value) {
+                  _buildTextField("City",
+                      controller: _cityController,
+                      validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter a city';
                     }
@@ -209,13 +251,16 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
                     return null;
                   }),
                   const SizedBox(height: 12),
-                  _buildTextField("Notes to Driver (Optional)"),
+                  _buildTextField("Notes to Driver (Optional)",
+                      controller: _notesToDriverController),
                   const SizedBox(height: 12),
-                  const Align(
+                  Align(
                     alignment: Alignment.centerRight,
                     child: Text(
-                      "Total Distance: 30Km",
-                      style: TextStyle(
+                      _deliveryDistance != null
+                          ? "Total Distance: ${_deliveryDistance!.toStringAsFixed(2)}Km"
+                          : "Total Distance: N/A",
+                      style: const TextStyle(
                           color: Colors.black54,
                           fontSize: 13,
                           fontWeight: FontWeight.w500),
@@ -231,6 +276,7 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
                 subtitle: "Details about what you are shipping",
                 children: [
                   _buildTextField("Items Description",
+                      controller: _itemsDescriptionController,
                       hint: "e.g., Electronics, Clothing, Books",
                       validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -243,6 +289,7 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
                     children: [
                       Expanded(
                           child: _buildTextField("Total Weight (kg)",
+                              controller: _totalWeightController,
                               type: TextInputType.number, validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Please enter a weight';
@@ -255,6 +302,7 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
                       const SizedBox(width: 12),
                       Expanded(
                           child: _buildTextField("Package Value (EGP)",
+                              controller: _packageValueController,
                               type: TextInputType.number, validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Please enter a value';
@@ -270,7 +318,6 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
               ),
               const SizedBox(height: 24),
 
-              // Conditional UI Block
               if (!_isCostCalculated)
                 _buildCalculateButton()
               else
@@ -294,9 +341,62 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
             shape:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
           ),
-          onPressed: () {
+          onPressed: () async {
             if (_formKey.currentState!.validate()) {
-              setState(() => _isCostCalculated = true);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Calculating shipping cost...')),
+              );
+
+              try {
+                // In a real application, these would come from a location picker/service
+                double fromLatitude = 40.7128;
+                double fromLongitude = -74.0060;
+                double toLatitude = 40.7589;
+                double toLongitude = -73.9851;
+
+                final orderRequestData = {
+                  "orderDescription": _itemsDescriptionController.text,
+                  "notesToDriver": _notesToDriverController.text.isEmpty ? null : _notesToDriverController.text,
+                  "packageWeight": double.parse(_totalWeightController.text),
+                  "packageValue": double.parse(_packageValueController.text),
+                  "fromLatitude": fromLatitude,
+                  "fromLongitude": fromLongitude,
+                  "toLatitude": toLatitude,
+                  "toLongitude": toLongitude,
+                  "custName": _customerNameController.text,
+                  "custPhoneNumber": _phoneNumberController.text,
+                  "custEmail": _emailAddressController.text,
+                };
+
+                final createOrderResponse =
+                    await _apiService.createOrderRequest(orderRequestData);
+                final reqId = createOrderResponse['reqId'];
+                final deliveryDistance = createOrderResponse['deliveryDistance'];
+
+                if (reqId != null) {
+                  final pricingResponse =
+                      await _apiService.getShippingCost(reqId);
+                  setState(() {
+                    _calculatedPrice = (pricingResponse['calculatedPrice'] as num?)?.toDouble() ?? 0.0;
+                    _currency = pricingResponse['currency'] as String?;
+                    _deliveryDistance = deliveryDistance?.toDouble();
+                    _orderRequestId = reqId;
+                    _isCostCalculated = true;
+                  });
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Shipping cost calculated successfully!')),
+                  );
+                } else {
+                   throw Exception('Failed to get request ID from order creation.');
+                }
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Error: ${e.toString()}')),
+                );
+                setState(() {
+                  _isCostCalculated = false;
+                });
+              }
             }
           },
           child: const Text("Calculate Shipping Cost",
@@ -327,19 +427,23 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
               Icon(Icons.monetization_on_outlined,
                   color: _primaryColor, size: 30),
               const SizedBox(width: 12),
-              const Column(
+              Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Shipping Cost',
+                  const Text('Shipping Cost',
                       style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                           color: Colors.black)),
-                  Text('\$0.00 EGP',
-                      style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.black54,
-                          fontWeight: FontWeight.w500)),
+                  Text(
+                    _calculatedPrice != null && _currency != null
+                        ? '${_calculatedPrice!.toStringAsFixed(2)} ${_currency!}'
+                        : 'N/A',
+                    style: const TextStyle(
+                        fontSize: 14,
+                        color: Colors.black54,
+                        fontWeight: FontWeight.w500),
+                  ),
                 ],
               ),
               const Spacer(),
@@ -364,12 +468,18 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
                   borderRadius: BorderRadius.circular(30)),
             ),
             onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const ReviewOrderScreen(orderId: "ORD-Afnan-1234"),
-                ),
-              );
+              if (_orderRequestId != null) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ReviewOrderScreen(orderId: _orderRequestId!), // Pass actual order ID
+                  ),
+                );
+              } else {
+                 ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Order ID not available. Please calculate shipping cost first.')),
+                );
+              }
             },
             child: const Text("Next",
                 style: TextStyle(fontSize: 16, color: Colors.white)),
