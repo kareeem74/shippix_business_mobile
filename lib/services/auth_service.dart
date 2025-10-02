@@ -112,6 +112,59 @@ class AuthService {
     }
   }
 
+  // method to verify mail
+  Future<void> verifyMail({required String email}) async {
+    try {
+      final response = await _dio.post(
+      '/api/auth/verifyMail/$email',
+      );
+      if (response.statusCode != 200) {
+        throw Exception(
+        'Failed to verify email. Status code: ${response.statusCode}');
+      }
+    } on DioException catch (e) {
+      throw Exception(_handleDioError(e, 'Email Verification Failed'));
+    }
+  }
+
+  // method to verifyOTP
+  Future<void> verifyOtp({required String email, required String otp}) async {
+    try {
+      final response = await _dio.post(
+        '/api/auth/verifyOtp/$email/$otp',
+      );
+      if (response.statusCode != 200) {
+        throw Exception('Failed to verify OTP. Status code: ${response.statusCode}');
+      }
+    } on DioException catch (e) {
+      throw Exception(_handleDioError(e, 'OTP Verification Failed'));
+    }
+  }
+
+  // method to edit the password
+  Future<void> changePassword({
+    required String email,
+    required String newPassword,
+    required String repeatPassword,
+  }) async {
+    try {
+      final response = await _dio.post(
+        '/api/auth/changePassword/$email',
+        data: {
+          "password": newPassword,
+          "repeatPassword": repeatPassword,
+        },
+      );
+      if (response.statusCode != 200) {
+        throw Exception(
+            'Failed to change password. Status code: ${response.statusCode}');
+      }
+    } on DioException catch (e) {
+      throw Exception(_handleDioError(e, 'Change Password Failed'));
+    }
+  }
+
+  // method to signout
   void signOut() {
     _currentUserToken = null;
     _refreshToken = null;
@@ -183,3 +236,4 @@ class AuthService {
     _refreshTokenTimer?.cancel(); // cancel timer on dispose
   }
 }
+
