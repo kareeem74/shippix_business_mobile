@@ -1,9 +1,42 @@
 import 'package:flutter/material.dart';
 import 'package:shippix_mobile/main.dart';
 import '../orders/new_order_screen.dart';
+import '../../services/dashboard_service.dart'; // Import DioService
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  final DioService _dioService = DioService(); // Initialize DioService
+  Map<String, dynamic> _dashboardData = {};
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchDashboardData();
+  }
+
+  Future<void> _fetchDashboardData() async {
+    try {
+      final response = await _dioService.dio.get('/analytics/dashboard');
+      if (response.statusCode == 200) {
+        setState(() {
+          _dashboardData = response.data;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      print('Error fetching dashboard data: $e');
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
 
   Widget _buildCard(String title, String value, IconData icon) {
     return Container(
@@ -182,7 +215,9 @@ class HomeScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: SingleChildScrollView(
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -202,19 +237,19 @@ class HomeScreen extends StatelessWidget {
                   children: [
                     SizedBox(
                       width: cardWidth,
-                      child: _buildCard("Total Completed Orders", "40", Icons.inventory_2),
+                      child: _buildCard("Total Completed Orders", _dashboardData['totalCompletedOrders']?.toString() ?? '0', Icons.inventory_2),
                     ),
                     SizedBox(
                       width: cardWidth,
-                      child: _buildCard("Active", "5", Icons.location_on_outlined),
+                      child: _buildCard("Active", _dashboardData['activeOrders']?.toString() ?? '0', Icons.location_on_outlined),
                     ),
                     SizedBox(
                       width: cardWidth,
-                      child: _buildCard("Completed Today", "3", Icons.check_box_outlined),
+                      child: _buildCard("Completed Today", _dashboardData['completedToday']?.toString() ?? '0', Icons.check_box_outlined),
                     ),
                     SizedBox(
                       width: cardWidth,
-                      child: _buildCard("Pending Pickup", "0", Icons.local_shipping_outlined),
+                      child: _buildCard("Pending Pickup", _dashboardData['pendingPickup']?.toString() ?? '0', Icons.local_shipping_outlined),
                     ),
                   ],
                 );
@@ -252,14 +287,14 @@ class HomeScreen extends StatelessWidget {
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
-                  Text("This Week's Performance",
+                children: [
+                  const Text("This Week's Performance",
                       style:
                       TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                  SizedBox(height: 12),
-                  Text("Delivery Success Rate: 96%"),
-                  Text("Average Delivery Time: 2 days"),
-                  Text("Customer Satisfaction: 4.9/5"),
+                  const SizedBox(height: 12),
+                  Text("Delivery Success Rate: ${_dashboardData['deliverySuccessRate']?.toString() ?? '0.0'}%"),
+                  Text("Average Delivery Time: ${_dashboardData['averageDeliveryTime']?.toString() ?? '0.0'} days"),
+                  Text("Customer Satisfaction: ${_dashboardData['customerSatisfaction']?.toString() ?? '0.0'}/5"),
                 ],
               ),
             ),
